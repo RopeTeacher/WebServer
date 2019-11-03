@@ -33,7 +33,7 @@ WebServer服务器是模拟Tomcat的一个Web容器
             InputStream in = socket.getInputStream();
             int d = -1;
             while ((d=in.read())!=-1){
-                System.out.println((char)d);
+                System.out.print((char)d);
             }
         }catch (Exception e){
             e.printStackTrace();
