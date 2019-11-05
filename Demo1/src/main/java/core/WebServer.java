@@ -14,9 +14,9 @@ WebServer服务器是模拟Tomcat的一个Web容器
      */
     public WebServer(){
         try{
-            System.out.println("等待客户端连接。。。");
+            System.out.println("客户端正在启动。。。");
             serverSocket = new ServerSocket(8082);
-            System.out.println("一个客户端连接了！");
+            System.out.println("客户端启动完成！");
         }catch (Exception e){
             e.printStackTrace();
         }
