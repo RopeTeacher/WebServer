@@ -667,6 +667,7 @@ public class ClientHandler implements Runnable{
 	
 
 }
+
 ```
 
 **创建HttpContext类，来管辖这些与http协议的相关内容**
@@ -744,6 +745,7 @@ public class HttpContext {
 		System.out.println(line);
 	}
 }
+
 ```
 
 通过map，我们可以修改sendHeaders方法，改成遍历headers来发送所有的响应头
@@ -954,6 +956,7 @@ public class HttpResponse {
 		return this.headers.get(name);
 	}
 }
+
 ```
 
 最后将我们的WebServer进行修改，套上一个while，让服务器一直处于启动的转态，可以不断的接收浏览器发送来的请求
@@ -1000,6 +1003,7 @@ public class WebServer {
 		server.start();
 	}
 }
+
 ```
 
 测试五
@@ -1113,6 +1117,7 @@ public class HttpContext {
 		System.out.println(line);
 	}
 }
+
 ```
 
 测试六
@@ -1161,6 +1166,7 @@ public class HttpContext {
 		</center>
 	</body>
 </html>
+
 ```
 
 效果如图
@@ -1428,6 +1434,7 @@ public class HttpRequest {
 	}
 
 }
+
 ```
 
 这样我们就可以把用户提交过来的具体参数，全部解析出来，然后保存到map里面。
@@ -1516,6 +1523,7 @@ public class RegServlet {
 		System.out.println("RegServlet:用户注册完毕!");
 	}
 }
+
 ```
 
 修改ClientHandler在处理请求的环节中添加一个新的分支判断，根据请求路径判断是否为请求一个业务，若是，则调用该业务处理类完成工作。否则再执行原有的分支判断是否请求webapps下的一个静态资源
@@ -1550,6 +1558,7 @@ public class RegServlet {
 					response.setEntity(new File("webapps/root/404.html"));					
 				}
 			}
+
 ```
 
 ## 实现服务器功能之登录
@@ -1586,6 +1595,7 @@ login.html -------------------------- 登录页面
 		</center>
 	</body>
 </html>
+
 ```
 
 login_success.html ------------- 登录成功提示页面
@@ -1600,6 +1610,7 @@ login_success.html ------------- 登录成功提示页面
 		<h1 align="center">恭喜您，登录成功!</h1>
 	</body>
 </html>
+
 ```
 
 login_fail.html --------------------- 登录失败提示页面
@@ -1617,6 +1628,7 @@ login_fail.html --------------------- 登录失败提示页面
 		</center>
 	</body>
 </html>
+
 ```
 
 当我们拿到用户输入的内容的时候，服务端根据user.dat文件，检查该用户的登录信息是否匹配。然后根据匹配结果跳转登录成功或登录失败页面。
@@ -1681,6 +1693,7 @@ public class LoginServlet {
 		}
 	}
 }
+
 ```
 
 同时修改ClientHandler,添加对应的请求处理，根据不同的请求new不同的对象
@@ -1720,6 +1733,7 @@ public class LoginServlet {
 				}
 			}
 			
+
 ```
 
 ## 添加反射
@@ -1738,6 +1752,7 @@ public class LoginServlet {
 	<servlet url="/myweb/login" className="com.webserver.servlets.LoginServlet"/>
 	<servlet url="/myweb/update" className="com.webserver.servlets.UpdateServlet"/>
 </servlets>
+
 ```
 
 修改ClientHandler，利用反射创建实例
@@ -1777,6 +1792,7 @@ public class LoginServlet {
 			}
 			// 3响应客户端
 			response.flush();
+
 ```
 
 # 结合服务器实战ATM项目遇到的问题
@@ -1804,6 +1820,7 @@ boolean b = jdbcdao.login(username, password);
 	    forward("/myweb/login_fail.html", request, response);
 	    return null;
 	}
+
 ```
 
 登入成功之后，立即调用dao里面事先准备好的getmap方法获得对象所有信息，然后刷界面的时候，也将map传递过去。
@@ -1824,6 +1841,7 @@ boolean b = jdbcdao.login(username, password);
 		byte[] data = str.getBytes("UTF-8");
 		out.write(data);
 	    }
+
 ```
 
 ### 用户登入之后，可能会进行一系列的操作，比如修改个人的一些信息。当用户修改完后，点击返回主页面，如何将用户的信息立即同步到登录成功的主界面
@@ -1853,6 +1871,7 @@ public class md5j {
 	System.out.println("第二次加密"+convertMD5(convertMD5(str)));
     }
 }
+
 ```
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20190216204144568.png)
@@ -1900,6 +1919,7 @@ public class md5j {
 	    return null;
 	}
     }
+
 ```
 
 如果用户不是第一次登入，我们就会将用户的原来加密的信息再次加密，也就是解密，然后再次通过数据库，拿到用户的所有信息。
