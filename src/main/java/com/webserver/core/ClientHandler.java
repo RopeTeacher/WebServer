@@ -1,38 +1,100 @@
 package com.webserver.core;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 
+import com.webserver.exception.EmptyRequestException;
+import com.webserver.http.HttpRequest;
+import com.webserver.http.HttpResponse;
+import com.webserver.servlet.HttpServlet;
+
+/**
+ * ¸ÃÏß³Ì¸ºÔğ´¦ÀíÓëÖ¸¶¨¿Í»§¶ËµÄ½»»¥¹¤×÷
+ * ´¦Àí¹ı³Ì·ÖÎªÈı²½:
+ * 1:×¼±¸¹¤×÷
+ * 2:´¦ÀíÇëÇó
+ * 3:·¢ËÍÏìÓ¦
+ * @author ta
+ *
+ */
 public class ClientHandler implements Runnable{
-    private Socket socket;
-
-    public ClientHandler(Socket socket) {
-        this.socket = socket;
-    }
-
-    public void run() {
-        System.out.println("ä¸€ä¸ªå®¢æˆ·ç«¯è¿æ¥äº†ï¼");
-        try {
-            InputStream in = socket.getInputStream();
-            String line = readLine(in);
-            System.out.println("line:"+line);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    private String readLine(InputStream in) throws IOException{
-        StringBuilder builder = new StringBuilder();
-        int cur = -1;//æœ¬æ¬¡è¯»çš„å­—ç¬¦ä¸²
-        int pre = -1;//ä¸Šæ¬¡è¯»çš„å­—ç¬¦ä¸²
-        while ((cur=in.read())!=-1){
-            if (cur==10&&pre==13){
-                break;
-            }
-            builder.append((char)cur);
-            pre  = cur;
-        }
-        return builder.toString().trim();
-    }
-
+	private Socket socket;
+	public ClientHandler(Socket socket) {
+		this.socket = socket;
+	}
+	
+	public void run() {
+		try {
+			//1 ×¼±¸¹¤×÷
+			HttpRequest request = new HttpRequest(socket);
+			HttpResponse response = new HttpResponse(socket);
+			/*
+			 * 2 ´¦ÀíÇëÇó
+			 * 2.1:Í¨¹ırequest»ñÈ¡¿Í»§¶ËÇëÇóµÄ×ÊÔ´
+			 *     ¶ÔÓ¦µÄ³éÏóÂ·¾¶requestURIµÄÖµ
+			 * 2.2:´ÓwebappsÄ¿Â¼ÖĞÍ¨¹ı¶ÔÓ¦µÄ³éÏóÂ·
+			 *     ¾¶Ñ°ÕÒ¸Ã×ÊÔ´    
+			 */
+			String path = request.getRequestURI();
+			System.out.println("path:"+path);
+			
+			
+			//Ê×ÏÈÅĞ¶Ï¸ÃÇëÇóÊÇ·ñÇëÇóÎªÒµÎñ
+			HttpServlet servlet 
+				= ServerContext.getServlet(path);
+			if(servlet!=null) {
+				//´¦ÀíÒµÎñ
+				servlet.service(request,response);
+							
+			}else {			
+				File file = new File("./webapps"+path);
+				if(file.exists()) {
+					System.out.println("¸Ã×ÊÔ´ÒÑÕÒµ½!");
+					
+					response.setEntity(file);
+		
+					System.out.println("ÏìÓ¦¿Í»§¶ËÍê±Ï!");
+				}else {
+					System.out.println("¸Ã×ÊÔ´²»´æÔÚ!");
+					
+					File notFound 
+						= new File("./webapps/root/404.html");
+					//ÉèÖÃ×´Ì¬´úÂëÓëÃèÊö
+					response.setStatusCode(404);
+					response.setStatusReason("NOT FOUND");
+					
+					//ÉèÖÃÕıÎÄÎÄ¼şÎª404Ò³Ãæ
+					response.setEntity(notFound);
+									
+				}
+			}
+			
+			//3ÏìÓ¦¿Í»§¶Ë
+			response.flush();
+		} catch(EmptyRequestException e) {
+			//µ¥¶À²¶»ñ¿ÕÇëÇó£¬²»×öÈÎºÎ´¦Àí¡£
+			System.out.println("¿ÕÇëÇó...");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			/*
+			 * ±¾´ÎÏìÓ¦Íê±ÏºóÓë¿Í»§¶Ë¶Ï¿ªÁ¬½Ó
+			 * Õâ¸ö²Ù×÷ÊÇHTTP1.0µÄ·½Ê½¡£
+			 * 1.1ÔÊĞí½¨Á¢Á¬½Óºó½øĞĞ¶à´ÎÇëÇó
+			 * ÏìÓ¦£¬µ«ÊÇĞèÒª¶îÍâµÄÏûÏ¢Í·ºÍ
+			 * ÏìÓ¦Í·µÄ´¦Àí
+			 */
+			try {
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}	
+		}
+	}
 }
+
+
+
+
+
